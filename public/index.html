@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abiye Takip</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:14px;}
+.header{background:#fff;padding:12px 16px;border-bottom:1px solid #e0e0d8;position:sticky;top:0;z-index:10;}
+.header h1{font-size:16px;font-weight:600;margin-bottom:8px;}
+.role-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.role-label{font-size:11px;color:#888;}
+.role-btn{padding:5px 12px;border-radius:20px;border:1px solid #ddd;font-size:12px;cursor:pointer;background:#fff;color:#555;transition:all .15s;}
+.role-btn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a;font-weight:500;}
+.role-btn.yonetici.active{background:#2e7d32;border-color:#2e7d32;}
+.tabs{display:flex;background:#fff;border-bottom:1px solid #e0e0d8;}
+.tab{padding:10px 16px;font-size:12px;font-weight:500;cursor:pointer;color:#888;border-bottom:2px solid transparent;}
+.tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;}
+.marka-header{background:#f0efe8;padding:7px 14px;font-size:11px;font-weight:600;color:#666;letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid #e0e0d8;}
+.urun-card{background:#fff;border-bottom:1px solid #eeeeea;padding:11px 14px;}
+.urun-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px;}
+.urun-kod{font-size:10px;color:#aaa;margin-bottom:2px;}
+.urun-ad{font-size:13px;font-weight:600;color:#1a1a1a;line-height:1.3;}
+.urun-detay{font-size:11px;color:#888;margin-top:2px;line-height:1.4;}
+.badge{font-size:10px;padding:3px 8px;border-radius:10px;white-space:nowrap;flex-shrink:0;font-weight:500;}
+.badge-iade{background:#fdecea;color:#c62828;}
+.badge-iste{background:#fff8e1;color:#e65100;}
+.votes-row{display:flex;gap:4px;flex-wrap:wrap;margin:5px 0 6px;}
+.vote-chip{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;}
+.chip-iste{background:#fff3e0;color:#e65100;}
+.chip-iade{background:#fdecea;color:#c62828;}
+.chip-pas{background:#f0f0f0;color:#888;}
+.btn-row{display:flex;gap:6px;}
+.vbtn{padding:6px 12px;border-radius:8px;border:1px solid #ddd;font-size:11px;font-weight:500;cursor:pointer;background:#fff;color:#555;transition:all .15s;flex:1;}
+.vbtn:active{transform:scale(.97);}
+.vbtn.sel-iste{background:#fff3e0;border-color:#ff9800;color:#e65100;}
+.vbtn.sel-iade{background:#fdecea;border-color:#ef5350;color:#c62828;}
+.vbtn.sel-pas{background:#f0f0f0;border-color:#bbb;color:#666;}
+.screen{display:none;}
+.screen.active{display:block;}
+.ozet-wrap{padding:12px 14px;}
+.ozet-section{margin-bottom:16px;}
+.ozet-section-title{font-size:11px;font-weight:700;margin-bottom:8px;padding:5px 8px;border-radius:6px;}
+.st-iste{background:#fff3e0;color:#e65100;}
+.st-iade{background:#fdecea;color:#c62828;}
+.ozet-item{padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:5px;border:1px solid #eee;}
+.ozet-item-ad{font-size:12px;font-weight:600;margin-bottom:4px;}
+.ozet-item-detay{font-size:10px;color:#888;margin-bottom:5px;}
+.ozet-chips{display:flex;gap:4px;flex-wrap:wrap;}
+.wa-btn{display:block;width:100%;padding:12px;background:#25d366;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin-top:10px;text-align:center;}
+.empty{padding:20px;text-align:center;color:#aaa;font-size:12px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#ccc;display:inline-block;margin-left:6px;vertical-align:middle;}
+.sync-dot.ok{background:#4caf50;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🗂 Abiye Takip <span class="sync-dot" id="sync-dot"></span></h1>
+  <div class="role-bar">
+    <span class="role-label">Ben:</span>
+    <button class="role-btn active" onclick="setRole(this,'Şura')">Şura</button>
+    <button class="role-btn" onclick="setRole(this,'Ebru')">Ebru</button>
+    <button class="role-btn" onclick="setRole(this,'Sema')">Sema</button>
+    <button class="role-btn" onclick="setRole(this,'Öznur')">Öznur</button>
+    <button class="role-btn yonetici" onclick="setRole(this,'Yönetici')">👑 Yönetici</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="setTab(this,'oylama')">Oylama</div>
+  <div class="tab" onclick="setTab(this,'ozet')">Özet</div>
+</div>
+
+<div id="screen-oylama" class="screen active">
+  <div id="urun-list"></div>
+</div>
+
+<div id="screen-ozet" class="screen">
+  <div class="ozet-wrap">
+    <div class="ozet-section">
+      <div class="ozet-section-title st-iste">⬆ İstenecek Ürünler</div>
+      <div id="ozet-iste"></div>
+    </div>
+    <div class="ozet-section">
+      <div class="ozet-section-title st-iade">↩ İade / Pas Ürünler</div>
+      <div id="ozet-iade"></div>
+    </div>
+    <button class="wa-btn" onclick="whatsapp()">📲 WhatsApp'a Gönder</button>
+  </div>
+</div>
+
+<script>
+const URUNLER = [
+  {kod:"ALFA-26Y7009",ad:"Abiye Elbise",marka:"Alfabeta",renk:"Siyah",beden:"36-38-40",durum:"iste",not:"40 tek kaldı, 36 ve 38 istenebilir"},
+  {kod:"ALFA-26Y7333",ad:"Abiye Elbise",marka:"Alfabeta",renk:"Siyah",beden:"38-40",durum:"",not:"Tükenmiş"},
+  {kod:"ALFA-26Y6988",ad:"Askılı Taşlı Saçaklı Krep Kısa Elbise",marka:"Alfabeta",renk:"Siyah",beden:"38-40",durum:"",not:"Tükenmiş, beyaz satış yok"},
+  {kod:"ALFA-26Y7424",ad:"Abiye Elbise",marka:"Alfabeta",renk:"Bej",beden:"36-38-40",durum:"iste",not:"40 tek kaldı, 36-38 istenebilir"},
+  {kod:"ALFA-26Y7399",ad:"Abiye Elbise",marka:"Alfabeta",renk:"Siyah",beden:"36-38-40",durum:"iste",not:"36 ve 40 var, 36 istenebilir"},
+  {kod:"ALFA-26Y7399",ad:"Abiye Elbise",marka:"Alfabeta",renk:"Beyaz",beden:"36-38",durum:"iste",not:"38 var, 36 istenebilir"},
+  {kod:"ALFA-26Y7446",ad:"Abiye Elbise",marka:"Alfabeta",renk:"Pembe",beden:"36-38",durum:"iste",not:"Tükenmiş, 36-38 istenebilir, çift beden olsun"},
+  {kod:"ALFA-26Y7320",ad:"Uzun Abiye Elbise",marka:"Alfabeta",renk:"Gülkurusu",beden:"38",durum:"iste",not:"Vizon ve yeşil satış yok"},
+  {kod:"ALFA-26Y7424",ad:"Abiye Elbise",marka:"Alfabeta",renk:"Suyeşili",beden:"36-38",durum:"iste",not:"36 var, 38 istenebilir"},
+  {kod:"ALFA-26Y7466",ad:"Uzun Abiye Elbise",marka:"Alfabeta",renk:"Sarı",beden:"36-38",durum:"iste",not:"38 tek, 36 istenebilir"},
+  {kod:"ALFA-26Y7394",ad:"Uzun Abiye Elbise",marka:"Alfabeta",renk:"Bordo",beden:"36-38",durum:"iste",not:"38 tek, 36 istenebilir"},
+  {kod:"ALFA-26Y7460",ad:"Uzun Abiye Elbise",marka:"Alfabeta",renk:"Gülkurusu/Kahve",beden:"36-42",durum:"iade",not:"Satış yok, iade olabilir"},
+  {kod:"ALFA-26Y7472",ad:"Uzun Abiye Elbise",marka:"Alfabeta",renk:"Siyah",beden:"36-40",durum:"iste",not:"40 tek, 36 istenebilir"},
+  {kod:"ALFA-26Y7468",ad:"Uzun Abiye Elbise",marka:"Alfabeta",renk:"Mint",beden:"40",durum:"iste",not:"Tükenmiş, mint 40 istenebilir"},
+  {kod:"ALFA-26Y7486",ad:"Uzun Abiye Elbise",marka:"Alfabeta",renk:"Taş",beden:"36-38",durum:"iste",not:"36 var, taş 38 istenebilir"},
+  {kod:"CRC-M25YCR001272",ad:"Straplez Taş Payet Takım Abiye",marka:"Cercis",renk:"Beige",beden:"36-38-40",durum:"iste",not:"38 ve 40 var, 36 istenebilir"},
+  {kod:"CRC-M25YCR001272",ad:"Straplez Taş Payet Takım Abiye",marka:"Cercis",renk:"Sarı",beden:"36-38-40",durum:"iste",not:"36 ve 40 var, 40 istenebilir"},
+  {kod:"CRC-M25YCR001272",ad:"Straplez Taş Payet Takım Abiye",marka:"Cercis",renk:"Mavi",beden:"36-38-40",durum:"iste",not:"38 tek, 36 İvana, 40 istenebilir"},
+  {kod:"CRC-M26YCR001353",ad:"Taş İşlemeli Straplez Abiye",marka:"Cercis",renk:"Nude",beden:"36-44",durum:"iste",not:"Tükenmiş, nude tam seri"},
+  {kod:"CRC-M26YCR001353",ad:"Taş İşlemeli Straplez Abiye",marka:"Cercis",renk:"Siyah",beden:"36-38",durum:"iste",not:"38 var, 36 istenebilir"},
+  {kod:"CRC-M26YCR001379",ad:"Straplez Drapeli Korsaj Abiye",marka:"Cercis",renk:"Kahverengi",beden:"36-38-40",durum:"iste",not:"38 ve 40 var, 36 istenebilir"},
+  {kod:"CRC-M26YCR001379",ad:"Straplez Drapeli Korsaj Abiye",marka:"Cercis",renk:"Pembe",beden:"36-38-40",durum:"",not:"Tükenmiş"},
+  {kod:"CRC-M26CRSS01372",ad:"Straplez Drapeli Yırtmaçlı Abiye",marka:"Cercis",renk:"Cream",beden:"36-38",durum:"iste",not:"Tükenmiş, 36-38 istenebilir"},
+  {kod:"CRC-M26CRSS01372",ad:"Straplez Drapeli Yırtmaçlı Abiye",marka:"Cercis",renk:"Bebe Mavi",beden:"36",durum:"iste",not:"Tükenmiş, 36-38 istenebilir"},
+  {kod:"CRC-M26CRSS01372",ad:"Straplez Drapeli Yırtmaçlı Abiye",marka:"Cercis",renk:"Pembe",beden:"36-38-40",durum:"iste",not:"36 tek kaldı, 38-40 istenebilir"},
+  {kod:"CRC-26Y1331",ad:"Straplez Kalp Yaka Tül Mini Abiye",marka:"Cercis",renk:"Babyblue",beden:"36-38",durum:"iste",not:"36 tek, 38 istenebilir"},
+  {kod:"CRC-26Y1331",ad:"Straplez Kalp Yaka Tül Mini Abiye",marka:"Cercis",renk:"Cream",beden:"36-38-40",durum:"iste",not:"38-40 var, 36 istenebilir"},
+  {kod:"CRC-26Y1331",ad:"Straplez Kalp Yaka Tül Mini Abiye",marka:"Cercis",renk:"Powder",beden:"36-38",durum:"",not:"Tükenmiş, 36-38 istenebilir"},
+  {kod:"CRC-26Y1361",ad:"Straplez Korse Formlu Uzun Abiye",marka:"Cercis",renk:"Burgundy",beden:"38",durum:"iste",not:"Tükenmiş, 36-38 istenebilir"},
+  {kod:"CRC-26Y1361",ad:"Straplez Korse Formlu Uzun Abiye",marka:"Cercis",renk:"Pembe",beden:"36-38-40",durum:"iste",not:"38 ve 40 var, 36 istenebilir"},
+  {kod:"CRC-26Y1383",ad:"Straplez Pul Payet Abiye",marka:"Cercis",renk:"Siyah",beden:"36-42",durum:"iade",not:"Satış yok, iade olabilir"},
+  {kod:"CRC-26Y1383",ad:"Straplez Pul Payet Abiye",marka:"Cercis",renk:"Cream",beden:"38",durum:"iade",not:"Satış yok, iade olabilir"},
+  {kod:"CRC-26Y1377",ad:"Taş İşlemeli Straplez Mini Abiye",marka:"Cercis",renk:"Siyah",beden:"36-40",durum:"iade",not:"Satış yok, iade olabilir"},
+  {kod:"CRC-26Y2314",ad:"Düğme Detaylı Üst Kloş Etek Takım",marka:"Cercis",renk:"BebeMavi/Siyah/Cream/Pembe",beden:"Karma",durum:"iade",not:"8 adet, satış yok, iade olabilir"},
+  {kod:"DOR-6068BB",ad:"BB Abiye Elbise",marka:"Doridorca",renk:"Bej",beden:"44-46",durum:"",not:"46 tek kaldı"},
+  {kod:"DOR-6068",ad:"Abiye Elbise",marka:"Doridorca",renk:"Siyah",beden:"36-42",durum:"",not:"38 tek kaldı"},
+  {kod:"DOR-6068",ad:"Abiye Elbise",marka:"Doridorca",renk:"Bebe Mavi",beden:"38-42",durum:"",not:"42 tek kaldı"},
+  {kod:"DOR-6068",ad:"Abiye Elbise",marka:"Doridorca",renk:"Vişne",beden:"36-42",durum:"",not:"38-42 kalan"},
+  {kod:"DOR-7050",ad:"Abiye Elbise",marka:"Doridorca",renk:"Bordo",beden:"38-42",durum:"",not:"42 tek kaldı"},
+  {kod:"DOR-7050",ad:"Abiye Elbise",marka:"Doridorca",renk:"İndigo",beden:"36-42",durum:"",not:"40-42 kalan"},
+  {kod:"DOR-7050",ad:"Abiye Elbise",marka:"Doridorca",renk:"Taş",beden:"38-42",durum:"",not:"42 tek kaldı"},
+  {kod:"DOR-8049",ad:"Abiye Elbise",marka:"Doridorca",renk:"Beyaz/Kahve/Siyah",beden:"38-42",durum:"",not:"Kırmızı satış yok"},
+  {kod:"DOR-7124",ad:"Abiye Elbise",marka:"Doridorca",renk:"Siyah",beden:"40",durum:"",not:"40 tek"},
+  {kod:"DOR-5062",ad:"Abiye Elbise",marka:"Doridorca",renk:"Çeşitli",beden:"36-40",durum:"",not:"Kırmızı tükendi"},
+  {kod:"DOR-7147",ad:"Abiye Elbise",marka:"Doridorca",renk:"Bordo/Lacivert/Vişne",beden:"36-42",durum:"",not:"Lacivert 38-40 var"},
+  {kod:"DOR-8031",ad:"Abiye Elbise",marka:"Doridorca",renk:"Çağla/Pembe/Sarı/Siyah",beden:"36-40",durum:"",not:"Sarı ve siyah tükendi"},
+  {kod:"DOR-8015",ad:"Abiye Elbise",marka:"Doridorca",renk:"Çeşitli",beden:"36-42",durum:"",not:"Mürdüm satış yok"},
+  {kod:"DOR-8022BB",ad:"BB Uzun Abiye",marka:"Doridorca",renk:"Kahve/Lacivert",beden:"44-48",durum:"iade",not:"Lacivert iade"},
+  {kod:"DOR-8072",ad:"Abiye Elbise",marka:"Doridorca",renk:"Siyah",beden:"38-42",durum:"",not:"38-40 var"},
+  {kod:"DOR-8030",ad:"Abiye Elbise",marka:"Doridorca",renk:"BebeMavi/Pembe/Siyah",beden:"36-40",durum:"",not:""},
+  {kod:"DOR-8035BB",ad:"BB Abiye",marka:"Doridorca",renk:"Lacivert/Siyah",beden:"46",durum:"",not:"46 tek"},
+  {kod:"DOR-7091BB",ad:"BB Abiye",marka:"Doridorca",renk:"Bronz/Lacivert/Vişne",beden:"44-48",durum:"",not:"Vişne 48 çift"},
+  {kod:"DOR-8094",ad:"Kısa Abiye",marka:"Doridorca",renk:"Beyaz/Lacivert/Sarı/Siyah",beden:"36-40",durum:"",not:"Beyaz ve lacivert tükendi"},
+  {kod:"DOR-7091",ad:"Abiye Elbise",marka:"Doridorca",renk:"BebeMavi/Kahve/Kırmızı/Sarı/Siyah",beden:"36-42",durum:"",not:"Bebe mavi satış yok"},
+  {kod:"DOR-8079",ad:"Abiye Elbise",marka:"Doridorca",renk:"Çağla/Kahve",beden:"36-40",durum:"",not:"Kahve satış yok"},
+  {kod:"DOR-8085",ad:"Abiye Elbise",marka:"Doridorca",renk:"BebeMavi/Beyaz/Sarı",beden:"36-40",durum:"",not:""},
+  {kod:"DOR-8082",ad:"Abiye Elbise",marka:"Doridorca",renk:"Çağla/Mocca",beden:"36-40",durum:"",not:"Mocca satış yok"},
+  {kod:"DOR-8025",ad:"Abiye Elbise",marka:"Doridorca",renk:"BebeMavi/Kahve/Petrol",beden:"36-40",durum:"",not:""},
+  {kod:"DOR-8038",ad:"Abiye Elbise",marka:"Doridorca",renk:"Bordo/Kahve/Siyah",beden:"36-40",durum:"",not:""},
+  {kod:"DOR-8064",ad:"Abiye Elbise",marka:"Doridorca",renk:"Gold/İndigo/Pudra/Siyah",beden:"36-40",durum:"",not:""},
+  {kod:"DOR-8036",ad:"Abiye Elbise",marka:"Doridorca",renk:"Mor/Sarı",beden:"36-40",durum:"",not:""},
+  {kod:"DOR-3012",ad:"Abiye Elbise",marka:"Doridorca",renk:"Beyaz/Lacivert",beden:"36-40",durum:"",not:"Lacivert tükendi"},
+  {kod:"DOR-6130",ad:"Abiye Elbise",marka:"Doridorca",renk:"Bordo/Çağla/Kahve/Lacivert",beden:"36-40",durum:"",not:""},
+  {kod:"DOR-8042",ad:"Abiye Elbise",marka:"Doridorca",renk:"BebeMavi/Beyaz/Siyah",beden:"36-40",durum:"",not:"Beyaz ve siyah tükendi"},
+  {kod:"DOR-8023",ad:"Abiye Elbise",marka:"Doridorca",renk:"Mürdüm",beden:"38-42",durum:"",not:"38 tek"}
+];
+
+let currentRole = 'Şura';
+let votes = {};
+
+async function loadVotes() {
+  try {
+    const r = await fetch('/api/votes');
+    votes = await r.json();
+    document.getElementById('sync-dot').className = 'sync-dot ok';
+    renderAll();
+  } catch(e) {
+    document.getElementById('sync-dot').className = 'sync-dot';
+  }
+}
+
+async function sendVote(idx, oy) {
+  if (currentRole === 'Yönetici') return;
+  const prev = votes[idx] && votes[idx][currentRole];
+  if (!votes[idx]) votes[idx] = {};
+  if (prev === oy) {
+    delete votes[idx][currentRole];
+    await fetch('/api/vote', {method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({urun_idx:idx, kisi:currentRole})});
+  } else {
+    votes[idx][currentRole] = oy;
+    await fetch('/api/vote', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({urun_idx:idx, kisi:currentRole, oy})});
+  }
+  renderAll();
+}
+
+function setRole(btn, role) {
+  currentRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function setTab(btn, tab) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  if (tab === 'ozet') renderOzet();
+}
+
+function renderAll() {
+  const markas = [...new Set(URUNLER.map(u => u.marka))];
+  let html = '';
+  markas.forEach(m => {
+    html += `<div class="marka-header">${m}</div>`;
+    URUNLER.forEach((u, i) => {
+      if (u.marka !== m) return;
+      const myVote = votes[i] && votes[i][currentRole];
+      const isYonetici = currentRole === 'Yönetici';
+      let badge = '';
+      if (u.durum === 'iade') badge = '<span class="badge badge-iade">↩ İade</span>';
+      else if (u.durum === 'iste') badge = '<span class="badge badge-iste">⬆ İste</span>';
+
+      let chips = '';
+      if (votes[i]) {
+        chips = '<div class="votes-row">';
+        Object.entries(votes[i]).forEach(([k,v]) => {
+          const cls = v==='iste'?'chip-iste':v==='iade'?'chip-iade':'chip-pas';
+          const ico = v==='iste'?'⬆':v==='iade'?'↩':'—';
+          chips += `<span class="vote-chip ${cls}">${ico} ${k}</span>`;
+        });
+        chips += '</div>';
+      }
+
+      let btns = '';
+      if (!isYonetici) {
+        btns = `<div class="btn-row">
+          <button class="vbtn${myVote==='iste'?' sel-iste':''}" onclick="sendVote(${i},'iste')">⬆ İste</button>
+          <button class="vbtn${myVote==='iade'?' sel-iade':''}" onclick="sendVote(${i},'iade')">↩ İade</button>
+          <button class="vbtn${myVote==='pas'?' sel-pas':''}" onclick="sendVote(${i},'pas')">— Pas</button>
+        </div>`;
+      }
+
+      html += `<div class="urun-card">
+        <div class="urun-top">
+          <div>
+            <div class="urun-kod">${u.kod}</div>
+            <div class="urun-ad">${u.ad} — ${u.renk}</div>
+            <div class="urun-detay">Beden: ${u.beden}${u.not?' · '+u.not:''}</div>
+          </div>
+          ${badge}
+        </div>
+        ${chips}${btns}
+      </div>`;
+    });
+  });
+  document.getElementById('urun-list').innerHTML = html;
+}
+
+function renderOzet() {
+  let isteHtml = '', iadeHtml = '';
+  URUNLER.forEach((u, i) => {
+    if (!votes[i] || !Object.keys(votes[i]).length) return;
+    const isteK = Object.entries(votes[i]).filter(([,v])=>v==='iste').map(([k])=>k);
+    const iadeK = Object.entries(votes[i]).filter(([,v])=>v==='iade').map(([k])=>k);
+    if (isteK.length) {
+      isteHtml += `<div class="ozet-item">
+        <div class="ozet-item-ad">${u.ad} — ${u.renk} (${u.marka})</div>
+        <div class="ozet-item-detay">${u.kod} · ${u.not}</div>
+        <div class="ozet-chips">${isteK.map(k=>`<span class="vote-chip chip-iste">⬆ ${k}</span>`).join('')}</div>
+      </div>`;
+    }
+    if (iadeK.length) {
+      iadeHtml += `<div class="ozet-item">
+        <div class="ozet-item-ad">${u.ad} — ${u.renk} (${u.marka})</div>
+        <div class="ozet-item-detay">${u.kod}</div>
+        <div class="ozet-chips">${iadeK.map(k=>`<span class="vote-chip chip-iade">↩ ${k}</span>`).join('')}</div>
+      </div>`;
+    }
+  });
+  document.getElementById('ozet-iste').innerHTML = isteHtml || '<div class="empty">Henüz oy yok.</div>';
+  document.getElementById('ozet-iade').innerHTML = iadeHtml || '<div class="empty">Henüz oy yok.</div>';
+}
+
+function whatsapp() {
+  let msg = '🗂 *ABİYE TOPLANTI ÖZETİ*\n\n';
+  let isteVar = false, iadeVar = false;
+  URUNLER.forEach((u, i) => {
+    if (!votes[i]) return;
+    const isteK = Object.entries(votes[i]).filter(([,v])=>v==='iste').map(([k])=>k);
+    const iadeK = Object.entries(votes[i]).filter(([,v])=>v==='iade').map(([k])=>k);
+    if (isteK.length && !isteVar) { msg += '⬆ *İSTENECEKLER*\n'; isteVar=true; }
+    if (isteK.length) msg += `• ${u.ad} ${u.renk} (${u.marka}) — ${isteK.join(', ')}\n`;
+  });
+  msg += '\n';
+  URUNLER.forEach((u, i) => {
+    if (!votes[i]) return;
+    const iadeK = Object.entries(votes[i]).filter(([,v])=>v==='iade').map(([k])=>k);
+    if (iadeK.length && !iadeVar) { msg += '↩ *İADE*\n'; iadeVar=true; }
+    if (iadeK.length) msg += `• ${u.ad} ${u.renk} (${u.marka}) — ${iadeK.join(', ')}\n`;
+  });
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg));
+}
+
+loadVotes();
+setInterval(loadVotes, 15000);
+</script>
+</body>
+</html>
